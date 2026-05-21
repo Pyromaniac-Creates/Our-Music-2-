@@ -113,25 +113,27 @@ function ShareModal({ onClose, onShare, currentUser }) {
   }
 
   async function handleShare() {
-    if (!meta || !mood || meta.error) return;
-    setSaving(true);
-    const { data, error } = await supabase.from("shares").insert([{
-      user_id: currentUser,
-      spotify_url: url,
-      title: meta.title,
-      artist: meta.artist,
-      album_art: meta.albumArt,
-      mood_name: mood.name,
-      mood_color: mood.color,
-      mood_light: mood.light,
-      mood_text_color: mood.text,
-      note,
-      saved: save,
-    }]).select().single();
-    setSaving(false);
-    if (!error && data) { onShare(data); onClose(); }
-  }
-
+  if (!meta || !mood || meta.error) return;
+  setSaving(true);
+  const { data, error } = await supabase.from("shares").insert([{
+    user_id: currentUser,
+    spotify_url: url,
+    title: meta.title,
+    artist: meta.artist,
+    album_art: meta.albumArt,
+    mood_name: mood.name,
+    mood_color: mood.color,
+    mood_light: mood.light,
+    mood_text_color: mood.text,
+    note,
+    saved: save,
+  }]).select().single();
+  if (error) console.error("Insert error:", error);
+  console.log("Inserted:", data);
+  setSaving(false);
+  if (!error && data) { onShare(data); onClose(); }
+}
+  
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
       <div style={{ background: "var(--color-background-primary)", borderRadius: 16, padding: "1.5rem", width: 440, maxWidth: "95vw", border: "0.5px solid var(--color-border-tertiary)" }}>
@@ -268,17 +270,19 @@ export default function App() {
     return () => supabase.removeChannel(channel);
   }, []);
 
-  async function fetchShares() {
-    setLoading(true);
-    const { data } = await supabase.from("shares").select("*").order("created_at", { ascending: false });
-    setShares(data || []);
-    setLoading(false);
-  }
-
   async function handleSave(id, current) {
     await supabase.from("shares").update({ saved: !current }).eq("id", id);
   }
-
+  
+async function fetchShares() {
+  setLoading(true);
+  const { data, error } = await supabase.from("shares").select("*").order("created_at", { ascending: false });
+  if (error) console.error("Fetch error:", error);
+  console.log("Fetched shares:", data);
+  setShares(data || []);
+  setLoading(false);
+}
+  
   async function handleDelete(id) {
     await supabase.from("shares").delete().eq("id", id);
   }
