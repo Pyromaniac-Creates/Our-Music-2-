@@ -1,0 +1,343 @@
+import { useState, useEffect } from "react";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// -------------------------------------------------------
+// PASTE YOUR TWO SUPABASE VALUES HERE
+const SUPABASE_URL = "https://YOUR_PROJECT_URL.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
+// -------------------------------------------------------
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const MOODS = [
+  { name: "Intense",    color: "#E24B4A", light: "#FCEBEB", text: "#A32D2D" },
+  { name: "Energetic",  color: "#EF9F27", light: "#FAEEDA", text: "#854F0B" },
+  { name: "Happy",      color: "#97C459", light: "#EAF3DE", text: "#3B6D11" },
+  { name: "Calm",       color: "#1D9E75", light: "#E1F5EE", text: "#0F6E56" },
+  { name: "Melancholy", color: "#378ADD", light: "#E6F1FB", text: "#185FA5" },
+  { name: "Dreamy",     color: "#7F77DD", light: "#EEEDFE", text: "#534AB7" },
+  { name: "Dark",       color: "#444441", light: "#F1EFE8", text: "#2C2C2A" },
+  { name: "Romantic",   color: "#D4537E", light: "#FBEAF0", text: "#993556" },
+];
+
+const USERS = [
+  { id: "you", name: "You",  initials: "YO", color: "#7F77DD", light: "#EEEDFE", text: "#534AB7" },
+  { id: "her", name: "Her",  initials: "HE", color: "#D4537E", light: "#FBEAF0", text: "#993556" },
+];
+
+function Avatar({ user, size = 36 }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: "50%", background: user.light, display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.33, fontWeight: 500, color: user.text, flexShrink: 0 }}>
+      {user.initials}
+    </div>
+  );
+}
+
+function MoodDot({ mood, size = 14, showName = false }) {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+      <span style={{ width: size, height: size, borderRadius: "50%", background: mood.color, display: "inline-block", flexShrink: 0 }} />
+      {showName && <span style={{ fontSize: 13, color: mood.text, background: mood.light, padding: "2px 8px", borderRadius: 999, fontWeight: 500 }}>{mood.name}</span>}
+    </span>
+  );
+}
+
+function SongCard({ share, currentUser, onSave, onDelete }) {
+  const user = USERS.find(u => u.id === share.user_id);
+  const mood = MOODS.find(m => m.name === share.mood_name) || { color: share.mood_color, light: share.mood_light, text: share.mood_text_color, name: share.mood_name };
+  const isOwner = share.user_id === currentUser;
+  const timeLabel = share.created_at ? new Date(share.created_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "Just now";
+
+  return (
+    <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: 12 }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+        <img src={share.album_art} alt="" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.background = "#eee"; e.target.src = ""; }} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
+            <Avatar user={user} size={22} />
+            <span style={{ fontWeight: 500, fontSize: 14, color: "var(--color-text-primary)" }}>{user.name}</span>
+            <span style={{ fontSize: 12, color: "var(--color-text-tertiary)" }}>{timeLabel}</span>
+          </div>
+          <div style={{ fontWeight: 500, fontSize: 15, color: "var(--color-text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{share.title}</div>
+          <div style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 6 }}>{share.artist}</div>
+          <MoodDot mood={mood} showName />
+        </div>
+      </div>
+      {share.note && (
+        <div style={{ marginTop: 12, fontSize: 14, color: "var(--color-text-secondary)", lineHeight: 1.6, borderLeft: `3px solid ${mood.color}`, paddingLeft: 12 }}>
+          {share.note}
+        </div>
+      )}
+      <div style={{ display: "flex", gap: 8, marginTop: 12, alignItems: "center" }}>
+        <a href={share.spotify_url} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#1DB954", textDecoration: "none", fontWeight: 500, display: "flex", alignItems: "center", gap: 4 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+          Open in Spotify
+        </a>
+        {isOwner && (
+          <>
+            <button onClick={() => onSave(share.id, share.saved)} style={{ fontSize: 12, padding: "3px 10px", borderRadius: 999, border: share.saved ? "1.5px solid #1DB954" : "0.5px solid var(--color-border-secondary)", background: share.saved ? "#E8F8EE" : "transparent", color: share.saved ? "#0F6E56" : "var(--color-text-secondary)", cursor: "pointer" }}>
+              {share.saved ? "Saved" : "Save"}
+            </button>
+            <button onClick={() => onDelete(share.id)} style={{ fontSize: 12, padding: "3px 10px", borderRadius: 999, border: "0.5px solid var(--color-border-secondary)", background: "transparent", color: "var(--color-text-tertiary)", cursor: "pointer" }}>
+              Delete
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ShareModal({ onClose, onShare, currentUser }) {
+  const [url, setUrl] = useState("");
+  const [mood, setMood] = useState(null);
+  const [note, setNote] = useState("");
+  const [save, setSave] = useState(false);
+  const [meta, setMeta] = useState(null);
+  const [fetching, setFetching] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  function extractSpotifyId(url) {
+    const m = url.match(/track\/([a-zA-Z0-9]+)/);
+    return m ? m[1] : null;
+  }
+
+  async function fetchMeta() {
+    const id = extractSpotifyId(url);
+    if (!id) { setMeta({ error: "Paste a Spotify track link" }); return; }
+    setFetching(true);
+    setMeta({ title: "Loading...", artist: "", albumArt: "" });
+    await new Promise(r => setTimeout(r, 400));
+    setMeta({ title: "Song title", artist: "Artist name", albumArt: `https://i.scdn.co/image/ab67616d0000b2737a190813fe9f659e16b9dfd1` });
+    setFetching(false);
+  }
+
+  async function handleShare() {
+    if (!meta || !mood || meta.error) return;
+    setSaving(true);
+    const { data, error } = await supabase.from("shares").insert([{
+      user_id: currentUser,
+      spotify_url: url,
+      title: meta.title,
+      artist: meta.artist,
+      album_art: meta.albumArt,
+      mood_name: mood.name,
+      mood_color: mood.color,
+      mood_light: mood.light,
+      mood_text_color: mood.text,
+      note,
+      saved: save,
+    }]).select().single();
+    setSaving(false);
+    if (!error && data) { onShare(data); onClose(); }
+  }
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
+      <div style={{ background: "var(--color-background-primary)", borderRadius: 16, padding: "1.5rem", width: 440, maxWidth: "95vw", border: "0.5px solid var(--color-border-tertiary)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <span style={{ fontWeight: 500, fontSize: 16 }}>Share a song</span>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-secondary)", fontSize: 20 }}>×</button>
+        </div>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <input value={url} onChange={e => setUrl(e.target.value)} placeholder="Paste Spotify track link..." style={{ flex: 1, fontSize: 14 }} />
+          <button onClick={fetchMeta} disabled={fetching} style={{ padding: "0 12px", fontSize: 13, whiteSpace: "nowrap" }}>Preview</button>
+        </div>
+        {meta && !meta.error && (
+          <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 14, padding: "10px", background: "var(--color-background-secondary)", borderRadius: 8 }}>
+            {meta.albumArt && <img src={meta.albumArt} alt="" style={{ width: 44, height: 44, borderRadius: 6 }} />}
+            <div>
+              <div style={{ fontWeight: 500, fontSize: 14 }}>{meta.title}</div>
+              <div style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>{meta.artist}</div>
+            </div>
+          </div>
+        )}
+        {meta?.error && <div style={{ fontSize: 13, color: "var(--color-text-danger)", marginBottom: 12 }}>{meta.error}</div>}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 8 }}>Mood</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {MOODS.map(m => (
+              <button key={m.name} onClick={() => setMood(m)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, border: mood?.name === m.name ? `2px solid ${m.color}` : "0.5px solid var(--color-border-secondary)", background: mood?.name === m.name ? m.light : "transparent", color: mood?.name === m.name ? m.text : "var(--color-text-secondary)", fontSize: 13, cursor: "pointer" }}>
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: m.color, display: "inline-block" }} />
+                {m.name}
+              </button>
+            ))}
+          </div>
+        </div>
+        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="How did this song make you feel? (optional)" rows={3} style={{ width: "100%", fontSize: 14, resize: "none", borderRadius: 8, padding: 10, border: "0.5px solid var(--color-border-secondary)", background: "var(--color-background-primary)", color: "var(--color-text-primary)", boxSizing: "border-box" }} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--color-text-secondary)", cursor: "pointer" }}>
+            <input type="checkbox" checked={save} onChange={e => setSave(e.target.checked)} />
+            Save to collection
+          </label>
+          <button onClick={handleShare} disabled={!meta || !mood || !!meta.error || saving} style={{ padding: "7px 18px", fontSize: 14, fontWeight: 500 }}>
+            {saving ? "Sharing..." : "Share"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatsPage({ shares }) {
+  const moodCounts = {};
+  const artistCounts = {};
+  shares.forEach(s => {
+    moodCounts[s.mood_name] = (moodCounts[s.mood_name] || 0) + 1;
+    artistCounts[s.artist] = (artistCounts[s.artist] || 0) + 1;
+  });
+  const topMoods = Object.entries(moodCounts).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  const topArtists = Object.entries(artistCounts).sort((a, b) => b[1] - a[1]).slice(0, 4);
+
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 20 }}>
+        {[
+          { label: "Songs shared", value: shares.length },
+          { label: "Songs saved", value: shares.filter(s => s.saved).length },
+          { label: "Unique artists", value: Object.keys(artistCounts).length },
+          { label: "Moods used", value: Object.keys(moodCounts).length },
+        ].map(stat => (
+          <div key={stat.label} style={{ background: "var(--color-background-secondary)", borderRadius: 8, padding: "1rem", textAlign: "center" }}>
+            <div style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 4 }}>{stat.label}</div>
+            <div style={{ fontSize: 28, fontWeight: 500 }}>{stat.value}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: 12 }}>
+        <div style={{ fontWeight: 500, marginBottom: 12 }}>Top moods</div>
+        {topMoods.length === 0 && <div style={{ color: "var(--color-text-tertiary)", fontSize: 14 }}>No data yet</div>}
+        {topMoods.map(([name, count]) => {
+          const mood = MOODS.find(m => m.name === name) || { color: "#888", light: "#eee", text: "#444", name };
+          const pct = Math.round((count / shares.length) * 100);
+          return (
+            <div key={name} style={{ marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}><MoodDot mood={mood} showName /></span>
+                <span style={{ color: "var(--color-text-secondary)" }}>{count} song{count !== 1 ? "s" : ""}</span>
+              </div>
+              <div style={{ height: 6, background: "var(--color-background-secondary)", borderRadius: 999, overflow: "hidden" }}>
+                <div style={{ width: `${pct}%`, height: "100%", background: mood.color, borderRadius: 999 }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem 1.25rem" }}>
+        <div style={{ fontWeight: 500, marginBottom: 12 }}>Top artists</div>
+        {topArtists.length === 0 && <div style={{ color: "var(--color-text-tertiary)", fontSize: 14 }}>No data yet</div>}
+        {topArtists.map(([artist, count], i) => (
+          <div key={artist} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: i < topArtists.length - 1 ? "0.5px solid var(--color-border-tertiary)" : "none" }}>
+            <span style={{ width: 24, height: 24, borderRadius: "50%", background: "var(--color-background-secondary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "var(--color-text-secondary)", fontWeight: 500 }}>{i + 1}</span>
+            <span style={{ flex: 1, fontSize: 14 }}>{artist}</span>
+            <span style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>{count}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function App() {
+  const [tab, setTab] = useState("feed");
+  const [shares, setShares] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState("you");
+  const [notif, setNotif] = useState(null);
+
+  useEffect(() => {
+    fetchShares();
+    const channel = supabase.channel("shares-channel")
+      .on("postgres_changes", { event: "*", schema: "public", table: "shares" }, payload => {
+        if (payload.eventType === "INSERT") {
+          setShares(prev => [payload.new, ...prev]);
+          if (payload.new.user_id !== currentUser) {
+            const sharer = USERS.find(u => u.id === payload.new.user_id);
+            setNotif(`${sharer?.name || "Someone"} just shared a song`);
+            setTimeout(() => setNotif(null), 4000);
+          }
+        }
+        if (payload.eventType === "UPDATE") {
+          setShares(prev => prev.map(s => s.id === payload.new.id ? payload.new : s));
+        }
+        if (payload.eventType === "DELETE") {
+          setShares(prev => prev.filter(s => s.id !== payload.old.id));
+        }
+      }).subscribe();
+    return () => supabase.removeChannel(channel);
+  }, []);
+
+  async function fetchShares() {
+    setLoading(true);
+    const { data } = await supabase.from("shares").select("*").order("created_at", { ascending: false });
+    setShares(data || []);
+    setLoading(false);
+  }
+
+  async function handleSave(id, current) {
+    await supabase.from("shares").update({ saved: !current }).eq("id", id);
+  }
+
+  async function handleDelete(id) {
+    await supabase.from("shares").delete().eq("id", id);
+  }
+
+  function handleShare(share) {
+    setNotif("Shared!");
+    setTimeout(() => setNotif(null), 3000);
+  }
+
+  const savedShares = shares.filter(s => s.saved);
+  const tabs = [
+    { id: "feed", label: "Feed", icon: "ti-music" },
+    { id: "saved", label: "Saved", icon: "ti-bookmark" },
+    { id: "stats", label: "Stats", icon: "ti-chart-bar" },
+  ];
+
+  return (
+    <div style={{ maxWidth: 520, margin: "0 auto", padding: "1rem", fontFamily: "var(--font-sans)" }}>
+      {notif && (
+        <div style={{ position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)", background: "#1DB954", color: "#fff", padding: "10px 20px", borderRadius: 999, fontSize: 14, fontWeight: 500, zIndex: 200 }}>
+          {notif}
+        </div>
+      )}
+      {showModal && <ShareModal onClose={() => setShowModal(false)} onShare={handleShare} currentUser={currentUser} />}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <div>
+          <div style={{ fontWeight: 500, fontSize: 20 }}>Our Music Space</div>
+          <div style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>Sharing as: {USERS.find(u => u.id === currentUser).name}</div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <select value={currentUser} onChange={e => setCurrentUser(e.target.value)} style={{ fontSize: 13, padding: "4px 8px" }}>
+            {USERS.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+          </select>
+          <button onClick={() => setShowModal(true)} style={{ padding: "7px 14px", fontSize: 14, fontWeight: 500, background: "#1DB954", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer" }}>
+            + Share
+          </button>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 4, marginBottom: 20, background: "var(--color-background-secondary)", borderRadius: 10, padding: 4 }}>
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{ flex: 1, padding: "7px 0", borderRadius: 8, border: "none", background: tab === t.id ? "var(--color-background-primary)" : "transparent", color: tab === t.id ? "var(--color-text-primary)" : "var(--color-text-secondary)", cursor: "pointer", fontSize: 14, fontWeight: tab === t.id ? 500 : 400 }}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {loading && <div style={{ textAlign: "center", color: "var(--color-text-tertiary)", padding: "2rem" }}>Loading...</div>}
+      {!loading && tab === "feed" && (
+        <div>
+          {shares.length === 0 && <div style={{ textAlign: "center", color: "var(--color-text-tertiary)", padding: "2rem" }}>No shares yet. Be the first!</div>}
+          {shares.map(s => <SongCard key={s.id} share={s} currentUser={currentUser} onSave={handleSave} onDelete={handleDelete} />)}
+        </div>
+      )}
+      {!loading && tab === "saved" && (
+        <div>
+          {savedShares.length === 0 && <div style={{ textAlign: "center", color: "var(--color-text-tertiary)", padding: "2rem" }}>No saved songs yet.</div>}
+          {savedShares.map(s => <SongCard key={s.id} share={s} currentUser={currentUser} onSave={handleSave} onDelete={handleDelete} />)}
+        </div>
+      )}
+      {!loading && tab === "stats" && <StatsPage shares={shares} />}
+    </div>
+  );
+}
