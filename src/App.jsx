@@ -283,10 +283,11 @@ export default function App() {
     await supabase.from("shares").delete().eq("id", id);
   }
 
-  function handleShare(share) {
-    setNotif("Shared!");
-    setTimeout(() => setNotif(null), 3000);
-  }
+function handleShare(share) {
+  setShares(prev => [share, ...prev]);
+  setNotif("Shared!");
+  setTimeout(() => setNotif(null), 3000);
+}
 
   const savedShares = shares.filter(s => s.saved);
   const tabs = [
