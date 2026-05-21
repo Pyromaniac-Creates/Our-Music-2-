@@ -3,21 +3,31 @@ import { createClient } from "@supabase/supabase-js";
 
 // -------------------------------------------------------
 // PASTE YOUR TWO SUPABASE VALUES HERE
-const SUPABASE_URL = "https://blsaggvyrsqtmnvvhlvg.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsc2FnZ3Z5cnNxdG1udnZobHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMjIzMjgsImV4cCI6MjA5NDg5ODMyOH0.qPH7mxA5oF-94mNZ5b0ouAZvDnuZlL961poRxC6z5yE";
+const SUPABASE_URL = "https://YOUR_PROJECT_URL.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
 // -------------------------------------------------------
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const MOODS = [
-  { name: "Intense",    color: "#E24B4A", light: "#FCEBEB", text: "#A32D2D" },
-  { name: "Energetic",  color: "#EF9F27", light: "#FAEEDA", text: "#854F0B" },
-  { name: "Happy",      color: "#97C459", light: "#EAF3DE", text: "#3B6D11" },
-  { name: "Calm",       color: "#1D9E75", light: "#E1F5EE", text: "#0F6E56" },
-  { name: "Melancholy", color: "#378ADD", light: "#E6F1FB", text: "#185FA5" },
-  { name: "Dreamy",     color: "#7F77DD", light: "#EEEDFE", text: "#534AB7" },
-  { name: "Dark",       color: "#444441", light: "#F1EFE8", text: "#2C2C2A" },
-  { name: "Romantic",   color: "#D4537E", light: "#FBEAF0", text: "#993556" },
+  // High-Energy & Positive
+  { name: "Euphoric",    color: "#FFD700", light: "#FFFBE6", text: "#7A6000", group: "High-Energy & Positive" },
+  { name: "Triumphant",  color: "#E8871A", light: "#FDF0E0", text: "#7A3D00", group: "High-Energy & Positive" },
+  { name: "Playful",     color: "#FF6EB4", light: "#FFF0F8", text: "#8C1A52", group: "High-Energy & Positive" },
+  { name: "Confident",   color: "#E24B4A", light: "#FCEBEB", text: "#A32D2D", group: "High-Energy & Positive" },
+  // Low-Energy & Dark
+  { name: "Melancholic", color: "#4A7BC4", light: "#EAF0FB", text: "#1E3F7A", group: "Low-Energy & Dark" },
+  { name: "Haunting",    color: "#7B5EA7", light: "#F2EEF9", text: "#3D1F6E", group: "Low-Energy & Dark" },
+  { name: "Nostalgic",   color: "#C4885A", light: "#FAF1E8", text: "#6B3E1A", group: "Low-Energy & Dark" },
+  { name: "Brooding",    color: "#444441", light: "#F1EFE8", text: "#2C2C2A", group: "Low-Energy & Dark" },
+  // Calm & Atmospheric
+  { name: "Serene",      color: "#1D9E75", light: "#E1F5EE", text: "#0F6E56", group: "Calm & Atmospheric" },
+  { name: "Dreamy",      color: "#7F77DD", light: "#EEEDFE", text: "#534AB7", group: "Calm & Atmospheric" },
+  { name: "Laid-back",   color: "#97C459", light: "#EAF3DE", text: "#3B6D11", group: "Calm & Atmospheric" },
+  // Intense & Dramatic
+  { name: "Epic",        color: "#1A3A6E", light: "#E8EDF7", text: "#0D1F40", group: "Intense & Dramatic" },
+  { name: "Aggressive",  color: "#C0392B", light: "#FBEAE9", text: "#7B1A13", group: "Intense & Dramatic" },
+  { name: "Mysterious",  color: "#2C6E6E", light: "#E3F4F4", text: "#0F3D3D", group: "Intense & Dramatic" },
 ];
 
 const USERS = [
@@ -140,30 +150,28 @@ function ShareModal({ onClose, onShare, currentUser }) {
   }
 
   async function handleShare() {
-  if (!meta || !mood || meta.error) return;
-  setSaving(true);
-  const { data, error } = await supabase.from("shares").insert([{
-    user_id: currentUser,
-    spotify_url: url,
-    title: meta.title,
-    artist: meta.artist,
-    album_art: meta.albumArt,
-    mood_name: mood.name,
-    mood_color: mood.color,
-    mood_light: mood.light,
-    mood_text_color: mood.text,
-    note,
-    saved: save,
-  }]).select().single();
-  if (error) console.error("Insert error:", error);
-  console.log("Inserted:", data);
-  setSaving(false);
-  if (!error && data) { onShare(data); onClose(); }
-}
-  
+    if (!meta || !mood || meta.error) return;
+    setSaving(true);
+    const { data, error } = await supabase.from("shares").insert([{
+      user_id: currentUser,
+      spotify_url: url,
+      title: meta.title,
+      artist: meta.artist,
+      album_art: meta.albumArt,
+      mood_name: mood.name,
+      mood_color: mood.color,
+      mood_light: mood.light,
+      mood_text_color: mood.text,
+      note,
+      saved: save,
+    }]).select().single();
+    setSaving(false);
+    if (!error && data) { onShare(data); onClose(); }
+  }
+
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
-      <div style={{ background: "var(--color-background-primary)", borderRadius: 16, padding: "1.5rem", width: 440, maxWidth: "95vw", border: "0.5px solid var(--color-border-tertiary)" }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
+      <div style={{ background: "var(--color-background-primary)", borderRadius: 20, padding: "1.75rem", width: 460, maxWidth: "95vw", border: "1px solid var(--color-border-secondary)", boxShadow: "0 24px 60px rgba(0,0,0,0.3)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <span style={{ fontWeight: 500, fontSize: 16 }}>Share a song</span>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-secondary)", fontSize: 20 }}>×</button>
@@ -183,15 +191,20 @@ function ShareModal({ onClose, onShare, currentUser }) {
         )}
         {meta?.error && <div style={{ fontSize: 13, color: "var(--color-text-danger)", marginBottom: 12 }}>{meta.error}</div>}
         <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 8 }}>Mood</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {MOODS.map(m => (
-              <button key={m.name} onClick={() => setMood(m)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, border: mood?.name === m.name ? `2px solid ${m.color}` : "0.5px solid var(--color-border-secondary)", background: mood?.name === m.name ? m.light : "transparent", color: mood?.name === m.name ? m.text : "var(--color-text-secondary)", fontSize: 13, cursor: "pointer" }}>
-                <span style={{ width: 10, height: 10, borderRadius: "50%", background: m.color, display: "inline-block" }} />
-                {m.name}
-              </button>
-            ))}
-          </div>
+          <div style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 10 }}>Mood</div>
+          {["High-Energy & Positive", "Low-Energy & Dark", "Calm & Atmospheric", "Intense & Dramatic"].map(group => (
+            <div key={group} style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>{group}</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {MOODS.filter(m => m.group === group).map(m => (
+                  <button key={m.name} onClick={() => setMood(m)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, border: mood?.name === m.name ? `2px solid ${m.color}` : "0.5px solid var(--color-border-secondary)", background: mood?.name === m.name ? m.light : "transparent", color: mood?.name === m.name ? m.text : "var(--color-text-secondary)", fontSize: 13, cursor: "pointer" }}>
+                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: m.color, display: "inline-block" }} />
+                    {m.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
         <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="How did this song make you feel? (optional)" rows={3} style={{ width: "100%", fontSize: 14, resize: "none", borderRadius: 8, padding: 10, border: "0.5px solid var(--color-border-secondary)", background: "var(--color-background-primary)", color: "var(--color-text-primary)", boxSizing: "border-box" }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
@@ -297,28 +310,26 @@ export default function App() {
     return () => supabase.removeChannel(channel);
   }, []);
 
+  async function fetchShares() {
+    setLoading(true);
+    const { data } = await supabase.from("shares").select("*").order("created_at", { ascending: false });
+    setShares(data || []);
+    setLoading(false);
+  }
+
   async function handleSave(id, current) {
     await supabase.from("shares").update({ saved: !current }).eq("id", id);
   }
-  
-async function fetchShares() {
-  setLoading(true);
-  const { data, error } = await supabase.from("shares").select("*").order("created_at", { ascending: false });
-  if (error) console.error("Fetch error:", error);
-  console.log("Fetched shares:", data);
-  setShares(data || []);
-  setLoading(false);
-}
-  
+
   async function handleDelete(id) {
     await supabase.from("shares").delete().eq("id", id);
   }
 
-function handleShare(share) {
-  setShares(prev => [share, ...prev]);
-  setNotif("Shared!");
-  setTimeout(() => setNotif(null), 3000);
-}
+  function handleShare(share) {
+    setShares(prev => [share, ...prev]);
+    setNotif("Shared!");
+    setTimeout(() => setNotif(null), 3000);
+  }
 
   const savedShares = shares.filter(s => s.saved);
   const tabs = [
