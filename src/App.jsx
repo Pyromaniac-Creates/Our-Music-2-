@@ -3,8 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 
 // -------------------------------------------------------
 // PASTE YOUR TWO SUPABASE VALUES HERE
-const SUPABASE_URL = "https://YOUR_PROJECT_URL.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
+const SUPABASE_URL = "https://blsaggvyrsqtmnvvhlvg.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsc2FnZ3Z5cnNxdG1udnZobHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMjIzMjgsImV4cCI6MjA5NDg5ODMyOH0.qPH7mxA5oF-94mNZ5b0ouAZvDnuZlL961poRxC6z5yE
+
+";
 // -------------------------------------------------------
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
