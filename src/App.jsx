@@ -268,9 +268,9 @@ function ShareModal({ onClose, onShare, currentUser }) {
         {meta?.error && <div style={{ fontSize: 13, color: "var(--color-text-danger)", marginBottom: 12 }}>{meta.error}</div>}
         <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 10 }}>Mood</div>
-          {["Happy & Uplifting", "Energetic & Powerful", "Calm & Peaceful", "Dreamy & Atmospheric", "Sad & Reflective", "Dark & Intense", "Cinematic & Epic", "Romantic & Intimate", "Groovy & Fun", "Retro & Nostalgic", "Futuristic & Electronic"].map(group => (
+          {["Happy & Uplifting", "Energetic & Powerful", "Calm & Peaceful", "Dreamy & Atmospheric", "Sad & Reflective", "Dark & Intense", "Cinematic & Epic", "Romantic & Intimate", "Groovy & Fun", "Retro & Nostalgic"].map(group => (
             <div key={group} style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>{group}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--color-text-primary)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, opacity: 0.75 }}>{group}</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {MOODS.filter(m => m.group === group).map(m => (
                   <button key={m.name} onClick={() => setMood(m)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, border: mood?.name === m.name ? `2px solid ${m.color}` : "0.5px solid var(--color-border-secondary)", background: mood?.name === m.name ? m.light : "transparent", color: mood?.name === m.name ? m.text : "var(--color-text-secondary)", fontSize: 13, cursor: "pointer" }}>
@@ -414,8 +414,15 @@ export default function App() {
     { id: "stats", label: "Stats", icon: "ti-chart-bar" },
   ];
 
+  const latestMoodColor = shares[0]?.mood_color || "#7F77DD";
+
   return (
-    <div style={{ maxWidth: 520, margin: "0 auto", padding: "1rem", fontFamily: "var(--font-sans)" }}>
+    <div style={{
+      maxWidth: 520, margin: "0 auto", padding: "1rem", fontFamily: "var(--font-sans)",
+      minHeight: "100vh",
+      background: `linear-gradient(160deg, ${latestMoodColor}22 0%, ${latestMoodColor}08 40%, transparent 70%)`,
+      transition: "background 1.2s ease"
+    }}>
       {notif && (
         <div style={{ position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)", background: "#1DB954", color: "#fff", padding: "10px 20px", borderRadius: 999, fontSize: 14, fontWeight: 500, zIndex: 200 }}>
           {notif}
