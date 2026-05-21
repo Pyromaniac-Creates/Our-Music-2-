@@ -10,29 +10,105 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const MOODS = [
-  // High-Energy & Positive
-  { name: "Euphoric",    color: "#FFD700", light: "#FFFBE6", text: "#7A6000", group: "High-Energy & Positive" },
-  { name: "Triumphant",  color: "#E8871A", light: "#FDF0E0", text: "#7A3D00", group: "High-Energy & Positive" },
-  { name: "Playful",     color: "#FF6EB4", light: "#FFF0F8", text: "#8C1A52", group: "High-Energy & Positive" },
-  { name: "Confident",   color: "#E24B4A", light: "#FCEBEB", text: "#A32D2D", group: "High-Energy & Positive" },
-  // Low-Energy & Dark
-  { name: "Melancholic", color: "#4A7BC4", light: "#EAF0FB", text: "#1E3F7A", group: "Low-Energy & Dark" },
-  { name: "Haunting",    color: "#7B5EA7", light: "#F2EEF9", text: "#3D1F6E", group: "Low-Energy & Dark" },
-  { name: "Nostalgic",   color: "#C4885A", light: "#FAF1E8", text: "#6B3E1A", group: "Low-Energy & Dark" },
-  { name: "Brooding",    color: "#444441", light: "#F1EFE8", text: "#2C2C2A", group: "Low-Energy & Dark" },
-  // Calm & Atmospheric
-  { name: "Serene",      color: "#1D9E75", light: "#E1F5EE", text: "#0F6E56", group: "Calm & Atmospheric" },
-  { name: "Dreamy",      color: "#7F77DD", light: "#EEEDFE", text: "#534AB7", group: "Calm & Atmospheric" },
-  { name: "Laid-back",   color: "#97C459", light: "#EAF3DE", text: "#3B6D11", group: "Calm & Atmospheric" },
-  // Intense & Dramatic
-  { name: "Epic",        color: "#1A3A6E", light: "#E8EDF7", text: "#0D1F40", group: "Intense & Dramatic" },
-  { name: "Aggressive",  color: "#C0392B", light: "#FBEAE9", text: "#7B1A13", group: "Intense & Dramatic" },
-  { name: "Mysterious",  color: "#2C6E6E", light: "#E3F4F4", text: "#0F3D3D", group: "Intense & Dramatic" },
+  // Happy & Uplifting
+  { name: "Euphoric",      color: "#FFD700", light: "#FFFBE6", text: "#7A6000", group: "Happy & Uplifting" },
+  { name: "Uplifting",     color: "#FFB347", light: "#FFF3E0", text: "#7A4500", group: "Happy & Uplifting" },
+  { name: "Cheerful",      color: "#FF6EB4", light: "#FFF0F8", text: "#8C1A52", group: "Happy & Uplifting" },
+  { name: "Playful",       color: "#F9A825", light: "#FFFDE7", text: "#6D4C00", group: "Happy & Uplifting" },
+  { name: "Feel Good",     color: "#97C459", light: "#EAF3DE", text: "#3B6D11", group: "Happy & Uplifting" },
+  { name: "Optimistic",    color: "#4CAF50", light: "#E8F5E9", text: "#1B5E20", group: "Happy & Uplifting" },
+  { name: "Sunny",         color: "#FDD835", light: "#FFFDE7", text: "#6D5E00", group: "Happy & Uplifting" },
+  { name: "Festive",       color: "#E91E63", light: "#FCE4EC", text: "#880E4F", group: "Happy & Uplifting" },
+
+  // Energetic & Powerful
+  { name: "Energetic",     color: "#EF9F27", light: "#FAEEDA", text: "#854F0B", group: "Energetic & Powerful" },
+  { name: "Triumphant",    color: "#E8871A", light: "#FDF0E0", text: "#7A3D00", group: "Energetic & Powerful" },
+  { name: "Confident",     color: "#E24B4A", light: "#FCEBEB", text: "#A32D2D", group: "Energetic & Powerful" },
+  { name: "Empowering",    color: "#FF5722", light: "#FBE9E7", text: "#8B1A00", group: "Energetic & Powerful" },
+  { name: "Motivational",  color: "#F44336", light: "#FFEBEE", text: "#7F0000", group: "Energetic & Powerful" },
+  { name: "Adventurous",   color: "#FF7043", light: "#FBE9E7", text: "#7D2000", group: "Energetic & Powerful" },
+  { name: "Driving",       color: "#D84315", light: "#FBE9E7", text: "#6D1A00", group: "Energetic & Powerful" },
+  { name: "Wild",          color: "#BF360C", light: "#FBE9E7", text: "#5D1100", group: "Energetic & Powerful" },
+
+  // Calm & Peaceful
+  { name: "Serene",        color: "#1D9E75", light: "#E1F5EE", text: "#0F6E56", group: "Calm & Peaceful" },
+  { name: "Peaceful",      color: "#26A69A", light: "#E0F2F1", text: "#00574B", group: "Calm & Peaceful" },
+  { name: "Relaxed",       color: "#66BB6A", light: "#E8F5E9", text: "#1B5E20", group: "Calm & Peaceful" },
+  { name: "Laid-back",     color: "#81C784", light: "#E8F5E9", text: "#1B5E20", group: "Calm & Peaceful" },
+  { name: "Gentle",        color: "#80CBC4", light: "#E0F2F1", text: "#00574B", group: "Calm & Peaceful" },
+  { name: "Meditative",    color: "#4DB6AC", light: "#E0F2F1", text: "#00574B", group: "Calm & Peaceful" },
+  { name: "Cosy",          color: "#A1887F", light: "#EFEBE9", text: "#4E342E", group: "Calm & Peaceful" },
+  { name: "Warm",          color: "#FFAB76", light: "#FFF3E0", text: "#6D3B00", group: "Calm & Peaceful" },
+
+  // Dreamy & Atmospheric
+  { name: "Dreamy",        color: "#7F77DD", light: "#EEEDFE", text: "#534AB7", group: "Dreamy & Atmospheric" },
+  { name: "Ethereal",      color: "#CE93D8", light: "#F3E5F5", text: "#6A1B9A", group: "Dreamy & Atmospheric" },
+  { name: "Ambient",       color: "#90CAF9", light: "#E3F2FD", text: "#0D47A1", group: "Dreamy & Atmospheric" },
+  { name: "Magical",       color: "#BA68C8", light: "#F3E5F5", text: "#6A1B9A", group: "Dreamy & Atmospheric" },
+  { name: "Mystical",      color: "#9575CD", light: "#EDE7F6", text: "#311B92", group: "Dreamy & Atmospheric" },
+  { name: "Otherworldly",  color: "#7E57C2", light: "#EDE7F6", text: "#311B92", group: "Dreamy & Atmospheric" },
+  { name: "Hypnotic",      color: "#5C6BC0", light: "#E8EAF6", text: "#1A237E", group: "Dreamy & Atmospheric" },
+  { name: "Airy",          color: "#B3E5FC", light: "#E1F5FE", text: "#01579B", group: "Dreamy & Atmospheric" },
+
+  // Sad & Reflective
+  { name: "Melancholic",   color: "#4A7BC4", light: "#EAF0FB", text: "#1E3F7A", group: "Sad & Reflective" },
+  { name: "Nostalgic",     color: "#C4885A", light: "#FAF1E8", text: "#6B3E1A", group: "Sad & Reflective" },
+  { name: "Lonely",        color: "#78909C", light: "#ECEFF1", text: "#263238", group: "Sad & Reflective" },
+  { name: "Sad",           color: "#5C7FA3", light: "#E8EEF5", text: "#1A3550", group: "Sad & Reflective" },
+  { name: "Pensive",       color: "#7986CB", light: "#E8EAF6", text: "#1A237E", group: "Sad & Reflective" },
+  { name: "Reflective",    color: "#546E7A", light: "#ECEFF1", text: "#263238", group: "Sad & Reflective" },
+  { name: "Vulnerable",    color: "#F48FB1", light: "#FCE4EC", text: "#880E4F", group: "Sad & Reflective" },
+  { name: "Sentimental",   color: "#F06292", light: "#FCE4EC", text: "#880E4F", group: "Sad & Reflective" },
+
+  // Dark & Intense
+  { name: "Brooding",      color: "#444441", light: "#F1EFE8", text: "#2C2C2A", group: "Dark & Intense" },
+  { name: "Haunting",      color: "#7B5EA7", light: "#F2EEF9", text: "#3D1F6E", group: "Dark & Intense" },
+  { name: "Aggressive",    color: "#C0392B", light: "#FBEAE9", text: "#7B1A13", group: "Dark & Intense" },
+  { name: "Eerie",         color: "#4A148C", light: "#EDE7F6", text: "#1A0050", group: "Dark & Intense" },
+  { name: "Ominous",       color: "#37474F", light: "#ECEFF1", text: "#0D1B21", group: "Dark & Intense" },
+  { name: "Tense",         color: "#B71C1C", light: "#FFEBEE", text: "#5D0000", group: "Dark & Intense" },
+  { name: "Rebellious",    color: "#880E4F", light: "#FCE4EC", text: "#3D0020", group: "Dark & Intense" },
+  { name: "Moody",         color: "#4527A0", light: "#EDE7F6", text: "#1A0070", group: "Dark & Intense" },
+
+  // Cinematic & Epic
+  { name: "Epic",          color: "#1A3A6E", light: "#E8EDF7", text: "#0D1F40", group: "Cinematic & Epic" },
+  { name: "Cinematic",     color: "#1565C0", light: "#E3F2FD", text: "#003580", group: "Cinematic & Epic" },
+  { name: "Dramatic",      color: "#283593", light: "#E8EAF6", text: "#0D1257", group: "Cinematic & Epic" },
+  { name: "Heroic",        color: "#0277BD", light: "#E1F5FE", text: "#003B6F", group: "Cinematic & Epic" },
+  { name: "Suspenseful",   color: "#1B5E20", light: "#E8F5E9", text: "#002800", group: "Cinematic & Epic" },
+  { name: "Mysterious",    color: "#2C6E6E", light: "#E3F4F4", text: "#0F3D3D", group: "Cinematic & Epic" },
+
+  // Romantic & Intimate
+  { name: "Romantic",      color: "#D4537E", light: "#FBEAF0", text: "#993556", group: "Romantic & Intimate" },
+  { name: "Passionate",    color: "#C2185B", light: "#FCE4EC", text: "#6D0030", group: "Romantic & Intimate" },
+  { name: "Intimate",      color: "#E91E63", light: "#FCE4EC", text: "#880E4F", group: "Romantic & Intimate" },
+  { name: "Soulful",       color: "#AD1457", light: "#FCE4EC", text: "#4A0025", group: "Romantic & Intimate" },
+  { name: "Poetic",        color: "#8E24AA", light: "#F3E5F5", text: "#4A0072", group: "Romantic & Intimate" },
+
+  // Groovy & Fun
+  { name: "Groovy",        color: "#00897B", light: "#E0F2F1", text: "#004D40", group: "Groovy & Fun" },
+  { name: "Funky",         color: "#F9A825", light: "#FFFDE7", text: "#6D4C00", group: "Groovy & Fun" },
+  { name: "Bouncy",        color: "#FDD835", light: "#FFFDE7", text: "#6D5E00", group: "Groovy & Fun" },
+  { name: "Catchy",        color: "#FF6F00", light: "#FFF8E1", text: "#6D3200", group: "Groovy & Fun" },
+  { name: "Summer",        color: "#FF8F00", light: "#FFF8E1", text: "#6D3800", group: "Groovy & Fun" },
+  { name: "Carefree",      color: "#FFC107", light: "#FFF8E1", text: "#6D4C00", group: "Groovy & Fun" },
+
+  // Retro & Nostalgic
+  { name: "Retro",         color: "#8D6E63", light: "#EFEBE9", text: "#3E2723", group: "Retro & Nostalgic" },
+  { name: "Vintage",       color: "#A1887F", light: "#EFEBE9", text: "#4E342E", group: "Retro & Nostalgic" },
+  { name: "Classic",       color: "#6D4C41", light: "#EFEBE9", text: "#3E2723", group: "Retro & Nostalgic" },
+  { name: "Rustic",        color: "#795548", light: "#EFEBE9", text: "#3E2723", group: "Retro & Nostalgic" },
+
+  // Futuristic & Electronic
+  { name: "Futuristic",    color: "#00BCD4", light: "#E0F7FA", text: "#006978", group: "Futuristic & Electronic" },
+  { name: "Digital",       color: "#0097A7", light: "#E0F7FA", text: "#004D5C", group: "Futuristic & Electronic" },
+  { name: "Glitchy",       color: "#00ACC1", light: "#E0F7FA", text: "#005662", group: "Futuristic & Electronic" },
+  { name: "Experimental",  color: "#0288D1", light: "#E1F5FE", text: "#013F6A", group: "Futuristic & Electronic" },
 ];
 
 const USERS = [
-  { id: "you", name: "You",  initials: "YO", color: "#7F77DD", light: "#EEEDFE", text: "#534AB7" },
-  { id: "her", name: "Her",  initials: "HE", color: "#D4537E", light: "#FBEAF0", text: "#993556" },
+  { id: "you", name: "Jude",  initials: "JU", color: "#7F77DD", light: "#EEEDFE", text: "#534AB7" },
+  { id: "her", name: "Sarra", initials: "SA", color: "#D4537E", light: "#FBEAF0", text: "#993556" },
 ];
 
 function Avatar({ user, size = 36 }) {
@@ -59,7 +135,7 @@ function SongCard({ share, currentUser, onSave, onDelete }) {
   const timeLabel = share.created_at ? new Date(share.created_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "Just now";
 
   return (
-    <div style={{ background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem 1.25rem", marginBottom: 12 }}>
+    <div style={{ background: "var(--color-background-primary)", border: `1.5px solid ${share.mood_color || "var(--color-border-secondary)"}`, borderRadius: 12, padding: "1rem 1.25rem", marginBottom: 12 }}>
       <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
         <img src={share.album_art} alt="" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.background = "#eee"; e.target.src = ""; }} />
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -192,7 +268,7 @@ function ShareModal({ onClose, onShare, currentUser }) {
         {meta?.error && <div style={{ fontSize: 13, color: "var(--color-text-danger)", marginBottom: 12 }}>{meta.error}</div>}
         <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 10 }}>Mood</div>
-          {["High-Energy & Positive", "Low-Energy & Dark", "Calm & Atmospheric", "Intense & Dramatic"].map(group => (
+          {["Happy & Uplifting", "Energetic & Powerful", "Calm & Peaceful", "Dreamy & Atmospheric", "Sad & Reflective", "Dark & Intense", "Cinematic & Epic", "Romantic & Intimate", "Groovy & Fun", "Retro & Nostalgic", "Futuristic & Electronic"].map(group => (
             <div key={group} style={{ marginBottom: 10 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: "var(--color-text-tertiary)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>{group}</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
