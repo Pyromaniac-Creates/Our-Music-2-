@@ -97,9 +97,24 @@ function ShareModal({ onClose, onShare, currentUser }) {
   const [fetching, setFetching] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  function extractSpotifyId(url) {
-    const m = url.match(/track\/([a-zA-Z0-9]+)/);
+  function extractSpotifyId(u) {
+    const m = u.match(/track\/([a-zA-Z0-9]+)/);
     return m ? m[1] : null;
+  }
+
+  async function getSpotifyToken() {
+    const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+    const clientSecret = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
+    const res = await fetch("https://accounts.spotify.com/api/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": "Basic " + btoa(clientId + ":" + clientSecret),
+      },
+      body: "grant_type=client_credentials",
+    });
+    const data = await res.json();
+    return data.access_token;
   }
 
   async function fetchMeta() {
@@ -107,8 +122,20 @@ function ShareModal({ onClose, onShare, currentUser }) {
     if (!id) { setMeta({ error: "Paste a Spotify track link" }); return; }
     setFetching(true);
     setMeta({ title: "Loading...", artist: "", albumArt: "" });
-    await new Promise(r => setTimeout(r, 400));
-    setMeta({ title: "Song title", artist: "Artist name", albumArt: `https://i.scdn.co/image/ab67616d0000b2737a190813fe9f659e16b9dfd1` });
+    try {
+      const token = await getSpotifyToken();
+      const res = await fetch(`https://api.spotify.com/v1/tracks/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const track = await res.json();
+      setMeta({
+        title: track.name,
+        artist: track.artists.map(a => a.name).join(", "),
+        albumArt: track.album.images[0]?.url || "",
+      });
+    } catch (e) {
+      setMeta({ error: "Couldn't fetch track info. Check the link and try again." });
+    }
     setFetching(false);
   }
 
