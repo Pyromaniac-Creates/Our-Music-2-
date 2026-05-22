@@ -59,7 +59,6 @@ const USERS = [
   { id: "her", name: "Sarra", initials: "SA", color: "#D4537E", light: "#FBEAF0", text: "#993556" },
 ];
 
-// Extract dominant colour from album art using a canvas
 async function getDominantColor(imgUrl) {
   return new Promise(resolve => {
     const img = new Image();
@@ -75,10 +74,7 @@ async function getDominantColor(imgUrl) {
         for (let i = 0; i < d.length; i += 16) {
           r += d[i]; g += d[i+1]; b += d[i+2]; count++;
         }
-        r = Math.round(r / count);
-        g = Math.round(g / count);
-        b = Math.round(b / count);
-        resolve(`rgb(${r},${g},${b})`);
+        resolve(`rgb(${Math.round(r/count)},${Math.round(g/count)},${Math.round(b/count)})`);
       } catch { resolve("#7F77DD"); }
     };
     img.onerror = () => resolve("#7F77DD");
@@ -202,7 +198,7 @@ function ShareModal({ onClose, onShare, currentUser }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", display: "flex", alignItems: "flex-start", justifyContent: "center", zIndex: 100, overflowY: "auto", padding: "16px 0 32px" }}>
-      <div style={{ background: "var(--color-background-primary)", borderRadius: 20, padding: "1.5rem", width: 460, maxWidth: "95vw", border: "1px solid var(--color-border-secondary)", boxShadow: "0 24px 60px rgba(0,0,0,0.3)", margin: "auto" }}>
+      <div style={{ background: "#ffffff", borderRadius: 20, padding: "1.5rem", width: 460, maxWidth: "95vw", border: "1px solid #e0e0e0", boxShadow: "0 24px 60px rgba(0,0,0,0.3)", margin: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <span style={{ fontWeight: 700, fontSize: 17, color: "#111" }}>Share a song</span>
           <button onClick={onClose} style={{ background: "none", border: "1.5px solid #ddd", borderRadius: "50%", width: 30, height: 30, cursor: "pointer", color: "#555", fontSize: 17, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
@@ -318,8 +314,65 @@ export default function App() {
   const [notif, setNotif] = useState(null);
   const [bgColor, setBgColor] = useState("#7F77DD");
 
+  async function registerPush(userId) {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+    try {
+      const reg = await navigator.serviceWorker.register("/sw.js");
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") return;
+      const existing = await reg.pushManager.getSubscription();
+      const sub = existing || await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY
+      });
+      await supabase.from("subscriptions").upsert({
+        user_id: userId,
+        subscription: JSON.stringify(sub)
+      }, { onConflict: "user_id" });
+    } catch (err) {
+      console.error("Push registration error:", err);
+    }
+  }
+
+  async function sendPushToOther(share) {
+    const otherId = share.user_id === "you" ? "her" : "you";
+    const sharer = USERS.find(u => u.id === share.user_id);
+    const { data } = await supabase
+      .from("subscriptions")
+      .select("subscription")
+      .eq("user_id", otherId)
+      .single();
+    if (!data) return;
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subscription: data.subscription,
+        title: `${sharer.name} shared a song 🎵`,
+        body: `${share.title} — ${share.artist}`,
+        url: "/"
+      })
+    });
+  }
+
+  async function extractBgColor(imgUrl) {
+    const color = await getDominantColor(imgUrl);
+    setBgColor(color);
+  }
+
+  async function fetchShares() {
+    setLoading(true);
+    const { data, error } = await supabase.from("shares").select("*").order("created_at", { ascending: false });
+    if (error) console.error("Fetch error:", error);
+    const rows = data || [];
+    setShares(rows);
+    setLoading(false);
+    if (rows[0]?.album_art) extractBgColor(rows[0].album_art);
+  }
+
   useEffect(() => {
     fetchShares();
+    registerPush(currentUser);
     const channel = supabase.channel("shares-channel")
       .on("postgres_changes", { event: "*", schema: "public", table: "shares" }, payload => {
         if (payload.eventType === "INSERT") {
@@ -337,21 +390,6 @@ export default function App() {
     return () => supabase.removeChannel(channel);
   }, []);
 
-  async function extractBgColor(imgUrl) {
-    const color = await getDominantColor(imgUrl);
-    setBgColor(color);
-  }
-
-  async function fetchShares() {
-    setLoading(true);
-    const { data, error } = await supabase.from("shares").select("*").order("created_at", { ascending: false });
-    if (error) console.error("Fetch error:", error);
-    const rows = data || [];
-    setShares(rows);
-    setLoading(false);
-    if (rows[0]?.album_art) extractBgColor(rows[0].album_art);
-  }
-
   async function handleSave(id, current) {
     await supabase.from("shares").update({ saved: !current }).eq("id", id);
   }
@@ -365,6 +403,7 @@ export default function App() {
     if (share.album_art) extractBgColor(share.album_art);
     setNotif("Shared! 🎵");
     setTimeout(() => setNotif(null), 3000);
+    sendPushToOther(share);
   }
 
   const savedShares = shares.filter(s => s.saved);
@@ -382,7 +421,7 @@ export default function App() {
       transition: "background 1.5s ease"
     }}>
       {notif && (
-        <div style={{ position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)", background: "#1DB954", color: "#fff", padding: "10px 20px", borderRadius: 999, fontSize: 14, fontWeight: 500, zIndex: 200, boxShadow: "0 4px 16px rgba(0,0,0,0.15)" }}>
+        <div style={{ position: "fixed", top: 16, left: "50%", transform: "translateX(-50%)", background: "#1DB954", color: "#fff", padding: "10px 20px", borderRadius: 999, fontSize: 14, fontWeight: 500, zIndex: 200, boxShadow: "0 4px 16px rgba(0,0,0,0.15)", whiteSpace: "nowrap" }}>
           {notif}
         </div>
       )}
@@ -393,7 +432,7 @@ export default function App() {
           <div style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>Sharing as: {USERS.find(u => u.id === currentUser).name}</div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <select value={currentUser} onChange={e => setCurrentUser(e.target.value)} style={{ fontSize: 13, padding: "4px 8px", border: "1px solid var(--color-border-secondary)", borderRadius: 8, background: "var(--color-background-secondary)", color: "var(--color-text-primary)" }}>
+          <select value={currentUser} onChange={e => { setCurrentUser(e.target.value); registerPush(e.target.value); }} style={{ fontSize: 13, padding: "4px 8px", border: "1px solid var(--color-border-secondary)", borderRadius: 8, background: "var(--color-background-secondary)", color: "var(--color-text-primary)" }}>
             {USERS.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
           </select>
           <button onClick={() => setShowModal(true)} style={{ padding: "7px 14px", fontSize: 14, fontWeight: 500, background: "#1DB954", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer" }}>
