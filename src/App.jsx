@@ -203,32 +203,32 @@ function ShareModal({ onClose, onShare, currentUser }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)", display: "flex", alignItems: "flex-start", justifyContent: "center", zIndex: 100, overflowY: "auto", padding: "16px 0 32px" }}>
       <div style={{ background: "var(--color-background-primary)", borderRadius: 20, padding: "1.5rem", width: 460, maxWidth: "95vw", border: "1px solid var(--color-border-secondary)", boxShadow: "0 24px 60px rgba(0,0,0,0.3)", margin: "auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <span style={{ fontWeight: 600, fontSize: 16, color: "var(--color-text-primary)" }}>Share a song</span>
-          <button onClick={onClose} style={{ background: "none", border: "1px solid var(--color-border-secondary)", borderRadius: "50%", width: 28, height: 28, cursor: "pointer", color: "var(--color-text-secondary)", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <span style={{ fontWeight: 700, fontSize: 17, color: "#111" }}>Share a song</span>
+          <button onClick={onClose} style={{ background: "none", border: "1.5px solid #ddd", borderRadius: "50%", width: 30, height: 30, cursor: "pointer", color: "#555", fontSize: 17, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
         </div>
         <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-          <input value={url} onChange={e => setUrl(e.target.value)} placeholder="Paste Spotify track link..." style={{ flex: 1, fontSize: 14, border: "1px solid var(--color-border-secondary)", borderRadius: 8, padding: "8px 10px", background: "var(--color-background-secondary)", color: "var(--color-text-primary)" }} />
-          <button onClick={fetchMeta} disabled={fetching} style={{ padding: "0 14px", fontSize: 13, whiteSpace: "nowrap", border: "1px solid var(--color-border-secondary)", borderRadius: 8, cursor: "pointer", background: "var(--color-background-secondary)", color: "var(--color-text-primary)" }}>Preview</button>
+          <input value={url} onChange={e => setUrl(e.target.value)} placeholder="Paste Spotify track link..." style={{ flex: 1, fontSize: 14, border: "1.5px solid #ccc", borderRadius: 8, padding: "9px 12px", background: "#fff", color: "#111", outline: "none" }} />
+          <button onClick={fetchMeta} disabled={fetching} style={{ padding: "0 14px", fontSize: 13, whiteSpace: "nowrap", border: "1.5px solid #ccc", borderRadius: 8, cursor: "pointer", background: "#f5f5f5", color: "#333", fontWeight: 500 }}>Preview</button>
         </div>
         {meta && !meta.error && (
-          <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12, padding: "10px", background: "var(--color-background-secondary)", borderRadius: 8, border: "1px solid var(--color-border-secondary)" }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12, padding: "10px 12px", background: "#f9f9f9", borderRadius: 8, border: "1.5px solid #ddd" }}>
             {meta.albumArt && <img src={meta.albumArt} alt="" style={{ width: 44, height: 44, borderRadius: 6 }} />}
             <div>
-              <div style={{ fontWeight: 500, fontSize: 14, color: "var(--color-text-primary)" }}>{meta.title}</div>
-              <div style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>{meta.artist}</div>
+              <div style={{ fontWeight: 600, fontSize: 14, color: "#111" }}>{meta.title}</div>
+              <div style={{ fontSize: 13, color: "#555" }}>{meta.artist}</div>
             </div>
           </div>
         )}
-        {meta?.error && <div style={{ fontSize: 13, color: "var(--color-text-danger)", marginBottom: 12 }}>{meta.error}</div>}
-        <div style={{ marginBottom: 12, maxHeight: 220, overflowY: "auto", paddingRight: 4 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text-primary)", marginBottom: 10 }}>Mood</div>
+        {meta?.error && <div style={{ fontSize: 13, color: "#c0392b", marginBottom: 12 }}>{meta.error}</div>}
+        <div style={{ marginBottom: 12, maxHeight: 220, overflowY: "auto", paddingRight: 4, border: "1.5px solid #ddd", borderRadius: 10, padding: "10px 12px", background: "#fafafa" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#111", marginBottom: 10 }}>Mood</div>
           {GROUPS.map(group => (
             <div key={group} style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--color-text-primary)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, opacity: 0.75 }}>{group}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#666", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>{group}</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {MOODS.filter(m => m.group === group).map(m => (
-                  <button key={m.name} onClick={() => setMood(m)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, border: mood?.name === m.name ? `2px solid ${m.color}` : "1px solid var(--color-border-secondary)", background: mood?.name === m.name ? m.light : "var(--color-background-secondary)", color: mood?.name === m.name ? m.text : "var(--color-text-primary)", fontSize: 13, cursor: "pointer" }}>
+                  <button key={m.name} onClick={() => setMood(m)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, border: mood?.name === m.name ? `2px solid ${m.color}` : "1.5px solid #ddd", background: mood?.name === m.name ? m.light : "#fff", color: mood?.name === m.name ? m.text : "#333", fontSize: 13, cursor: "pointer", fontWeight: mood?.name === m.name ? 600 : 400 }}>
                     <span style={{ width: 10, height: 10, borderRadius: "50%", background: m.color, display: "inline-block" }} />
                     {m.name}
                   </button>
@@ -237,13 +237,13 @@ function ShareModal({ onClose, onShare, currentUser }) {
             </div>
           ))}
         </div>
-        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="How did this song make you feel? (optional)" rows={2} style={{ width: "100%", fontSize: 14, resize: "none", borderRadius: 8, padding: 10, border: "1px solid var(--color-border-secondary)", background: "var(--color-background-secondary)", color: "var(--color-text-primary)", boxSizing: "border-box" }} />
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
-          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--color-text-secondary)", cursor: "pointer" }}>
+        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="How did this song make you feel? (optional)" rows={2} style={{ width: "100%", fontSize: 14, resize: "none", borderRadius: 8, padding: "10px 12px", border: "1.5px solid #ccc", background: "#fff", color: "#111", boxSizing: "border-box", outline: "none" }} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#555", cursor: "pointer" }}>
             <input type="checkbox" checked={save} onChange={e => setSave(e.target.checked)} />
             Save to collection
           </label>
-          <button onClick={handleShare} disabled={!meta || !mood || !!meta.error || saving} style={{ padding: "7px 18px", fontSize: 14, fontWeight: 500, border: "1px solid var(--color-border-secondary)", borderRadius: 8, cursor: "pointer", background: "var(--color-background-secondary)", color: "var(--color-text-primary)" }}>
+          <button onClick={handleShare} disabled={!meta || !mood || !!meta.error || saving} style={{ padding: "8px 20px", fontSize: 14, fontWeight: 600, border: "none", borderRadius: 8, cursor: "pointer", background: "#1DB954", color: "#fff", opacity: (!meta || !mood || !!meta.error || saving) ? 0.5 : 1 }}>
             {saving ? "Sharing..." : "Share"}
           </button>
         </div>
