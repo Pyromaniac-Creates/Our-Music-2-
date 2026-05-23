@@ -64,7 +64,7 @@ export default async function handler(req, res) {
 
     // Pick a second colour that is visually distinct from the first
     // by ensuring minimum colour distance (Euclidean in RGB space)
-    const MIN_DISTANCE = 80; // minimum RGB distance to be "different enough"
+    const MIN_DISTANCE = 120; // minimum RGB distance to be "different enough"
     let color2 = null;
 
     for (const [key] of sorted.slice(1)) {
