@@ -64,6 +64,13 @@ const WARM = {
   shadowHover: "0 4px 24px rgba(100,60,20,0.13)",
 };
 
+// Convert "rgb(r,g,b)" string to rgba with opacity
+function toRgba(rgbStr, opacity) {
+  const match = rgbStr.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+  if (!match) return `rgba(160,136,90,${opacity})`;
+  return `rgba(${match[1]},${match[2]},${match[3]},${opacity})`;
+}
+
 async function getDominantColors(imgUrl) {
   try {
     const res = await fetch(`/api/color?url=${encodeURIComponent(imgUrl)}&t=${Date.now()}`);
@@ -71,7 +78,7 @@ async function getDominantColors(imgUrl) {
     const { color1, color2 } = await res.json();
     return [color1, color2];
   } catch {
-    return ["#C4885A", "#7F77DD"];
+    return ["rgb(196,136,90)", "rgb(127,119,221)"];
   }
 }
 
@@ -100,9 +107,7 @@ function SongCard({ share, currentUser, onSave, onDelete }) {
   return (
     <div style={{ background: WARM.card, border: `1px solid ${WARM.cardBorder}`, borderLeft: `3.5px solid ${mood.color}`, borderRadius: 14, padding: "1.1rem 1.25rem", marginBottom: 14, boxShadow: WARM.shadow }}>
       <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-        <div style={{ position: "relative", flexShrink: 0 }}>
-          <img src={share.album_art} alt="" style={{ width: 60, height: 60, borderRadius: 10, objectFit: "cover", display: "block", boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }} onError={e => { e.target.style.background = "#eee"; e.target.src = ""; }} />
-        </div>
+        <img src={share.album_art} alt="" style={{ width: 60, height: 60, borderRadius: 10, objectFit: "cover", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }} onError={e => { e.target.style.background = "#eee"; e.target.src = ""; }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
@@ -312,11 +317,9 @@ export default function App() {
   const [shares, setShares] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  // Persist current user across app closes
   const [currentUser, setCurrentUser] = useState(() => localStorage.getItem("currentUser") || "you");
   const [notif, setNotif] = useState(null);
-  // Two-tone gradient from album art
-  const [bgColors, setBgColors] = useState(["#C4885A", "#7F77DD"]);
+  const [bgColors, setBgColors] = useState(["rgb(196,136,90)", "rgb(127,119,221)"]);
 
   async function registerPush(userId) {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
@@ -414,11 +417,15 @@ export default function App() {
   const user = USERS.find(u => u.id === currentUser);
   const tabs = ["Feed", "Saved", "Stats"];
 
+  // Convert rgb() strings to rgba() with proper opacity for the gradient
+  const grad1 = toRgba(bgColors[0], 0.45);
+  const grad2 = toRgba(bgColors[1], 0.30);
+
   return (
     <div style={{
       maxWidth: 520, margin: "0 auto", padding: "1.2rem 1rem 3rem",
       fontFamily: "'Georgia', serif", minHeight: "100vh",
-      background: `linear-gradient(135deg, ${bgColors[0]}55 0%, ${bgColors[1]}33 100%)`,
+      background: `linear-gradient(135deg, ${grad1} 0%, ${grad2} 100%)`,
       transition: "background 1.5s ease"
     }}>
       {notif && (
