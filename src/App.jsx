@@ -64,36 +64,15 @@ const WARM = {
   shadowHover: "0 4px 24px rgba(100,60,20,0.13)",
 };
 
-// Extract two dominant colours from opposite regions of the album art
 async function getDominantColors(imgUrl) {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = 50; canvas.height = 50;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, 50, 50);
-        const d = ctx.getImageData(0, 0, 50, 50).data;
-        // Top-left region → colour 1
-        let r1 = 0, g1 = 0, b1 = 0, c1 = 0;
-        for (let i = 0; i < d.length / 2; i += 16) {
-          r1 += d[i]; g1 += d[i+1]; b1 += d[i+2]; c1++;
-        }
-        // Bottom-right region → colour 2
-        let r2 = 0, g2 = 0, b2 = 0, c2 = 0;
-        for (let i = d.length / 2; i < d.length; i += 16) {
-          r2 += d[i]; g2 += d[i+1]; b2 += d[i+2]; c2++;
-        }
-        const col1 = `rgb(${Math.round(r1/c1)},${Math.round(g1/c1)},${Math.round(b1/c1)})`;
-        const col2 = `rgb(${Math.round(r2/c2)},${Math.round(g2/c2)},${Math.round(b2/c2)})`;
-        resolve([col1, col2]);
-      } catch { resolve(["#C4885A", "#7F77DD"]); }
-    };
-    img.onerror = () => resolve(["#C4885A", "#7F77DD"]);
-    img.src = imgUrl;
-  });
+  try {
+    const res = await fetch(`/api/color?url=${encodeURIComponent(imgUrl)}`);
+    if (!res.ok) throw new Error("color fetch failed");
+    const { color1, color2 } = await res.json();
+    return [color1, color2];
+  } catch {
+    return ["#C4885A", "#7F77DD"];
+  }
 }
 
 function Avatar({ user, size = 36 }) {
