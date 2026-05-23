@@ -64,7 +64,8 @@ const WARM = {
   shadowHover: "0 4px 24px rgba(100,60,20,0.13)",
 };
 
-async function getDominantColor(imgUrl) {
+// Extract two dominant colours from opposite regions of the album art
+async function getDominantColors(imgUrl) {
   return new Promise(resolve => {
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -75,12 +76,22 @@ async function getDominantColor(imgUrl) {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, 50, 50);
         const d = ctx.getImageData(0, 0, 50, 50).data;
-        let r = 0, g = 0, b = 0, count = 0;
-        for (let i = 0; i < d.length; i += 16) { r += d[i]; g += d[i+1]; b += d[i+2]; count++; }
-        resolve(`rgb(${Math.round(r/count)},${Math.round(g/count)},${Math.round(b/count)})`);
-      } catch { resolve("#A07850"); }
+        // Top-left region → colour 1
+        let r1 = 0, g1 = 0, b1 = 0, c1 = 0;
+        for (let i = 0; i < d.length / 2; i += 16) {
+          r1 += d[i]; g1 += d[i+1]; b1 += d[i+2]; c1++;
+        }
+        // Bottom-right region → colour 2
+        let r2 = 0, g2 = 0, b2 = 0, c2 = 0;
+        for (let i = d.length / 2; i < d.length; i += 16) {
+          r2 += d[i]; g2 += d[i+1]; b2 += d[i+2]; c2++;
+        }
+        const col1 = `rgb(${Math.round(r1/c1)},${Math.round(g1/c1)},${Math.round(b1/c1)})`;
+        const col2 = `rgb(${Math.round(r2/c2)},${Math.round(g2/c2)},${Math.round(b2/c2)})`;
+        resolve([col1, col2]);
+      } catch { resolve(["#C4885A", "#7F77DD"]); }
     };
-    img.onerror = () => resolve("#A07850");
+    img.onerror = () => resolve(["#C4885A", "#7F77DD"]);
     img.src = imgUrl;
   });
 }
@@ -95,7 +106,7 @@ function Avatar({ user, size = 36 }) {
 
 function MoodPill({ mood, showName = false }) {
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: mood.light, border: `1px solid ${mood.color}44`, borderRadius: 999, padding: showName ? "3px 10px 3px 7px" : "3px 7px", }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: mood.light, border: `1px solid ${mood.color}44`, borderRadius: 999, padding: showName ? "3px 10px 3px 7px" : "3px 7px" }}>
       <span style={{ width: 8, height: 8, borderRadius: "50%", background: mood.color, display: "inline-block", flexShrink: 0 }} />
       {showName && <span style={{ fontSize: 12, color: mood.text, fontWeight: 600, letterSpacing: 0.2 }}>{mood.name}</span>}
     </span>
@@ -235,7 +246,7 @@ function ShareModal({ onClose, onShare, currentUser }) {
               <div style={{ fontSize: 11, fontWeight: 700, color: WARM.textMuted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{group}</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {MOODS.filter(m => m.group === group).map(m => (
-                  <button key={m.name} onClick={() => setMood(m)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 11px", borderRadius: 999, border: mood?.name === m.name ? `2px solid ${m.color}` : `1.5px solid ${WARM.inputBorder}`, background: mood?.name === m.name ? m.light : WARM.card, color: mood?.name === m.name ? m.text : WARM.textSoft, fontSize: 13, cursor: "pointer", fontWeight: mood?.name === m.name ? 700 : 400, transition: "all 0.15s", fontFamily: "inherit" }}>
+                  <button key={m.name} onClick={() => setMood(m)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 11px", borderRadius: 999, border: mood?.name === m.name ? `2px solid ${m.color}` : `1.5px solid ${WARM.inputBorder}`, background: mood?.name === m.name ? m.light : WARM.card, color: mood?.name === m.name ? m.text : WARM.textSoft, fontSize: 13, cursor: "pointer", fontWeight: mood?.name === m.name ? 700 : 400, fontFamily: "inherit" }}>
                     <span style={{ width: 9, height: 9, borderRadius: "50%", background: m.color, display: "inline-block" }} />
                     {m.name}
                   </button>
@@ -250,7 +261,7 @@ function ShareModal({ onClose, onShare, currentUser }) {
             <input type="checkbox" checked={save} onChange={e => setSave(e.target.checked)} />
             Save to collection
           </label>
-          <button onClick={handleShare} disabled={!meta || !mood || !!meta.error || saving} style={{ padding: "10px 24px", fontSize: 14, fontWeight: 700, border: "none", borderRadius: 10, cursor: "pointer", background: saving || !meta || !mood || !!meta.error ? WARM.tabBg : "#1DB954", color: saving || !meta || !mood || !!meta.error ? WARM.textMuted : "#fff", transition: "all 0.2s", fontFamily: "inherit", letterSpacing: 0.3 }}>
+          <button onClick={handleShare} disabled={!meta || !mood || !!meta.error || saving} style={{ padding: "10px 24px", fontSize: 14, fontWeight: 700, border: "none", borderRadius: 10, cursor: "pointer", background: saving || !meta || !mood || !!meta.error ? WARM.tabBg : "#1DB954", color: saving || !meta || !mood || !!meta.error ? WARM.textMuted : "#fff", fontFamily: "inherit", letterSpacing: 0.3 }}>
             {saving ? "Sharing..." : "Share ♫"}
           </button>
         </div>
@@ -322,9 +333,11 @@ export default function App() {
   const [shares, setShares] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [currentUser, setCurrentUser] = useState("you");
+  // Persist current user across app closes
+  const [currentUser, setCurrentUser] = useState(() => localStorage.getItem("currentUser") || "you");
   const [notif, setNotif] = useState(null);
-  const [bgColor, setBgColor] = useState("#C4885A");
+  // Two-tone gradient from album art
+  const [bgColors, setBgColors] = useState(["#C4885A", "#7F77DD"]);
 
   async function registerPush(userId) {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
@@ -333,8 +346,14 @@ export default function App() {
       const permission = await Notification.requestPermission();
       if (permission !== "granted") return;
       const existing = await reg.pushManager.getSubscription();
-      const sub = existing || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY });
-      await supabase.from("subscriptions").upsert({ user_id: userId, subscription: JSON.stringify(sub) }, { onConflict: "user_id" });
+      const sub = existing || await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY
+      });
+      await supabase.from("subscriptions").upsert(
+        { user_id: userId, subscription: JSON.stringify(sub) },
+        { onConflict: "user_id" }
+      );
     } catch (err) { console.error("Push registration error:", err); }
   }
 
@@ -346,13 +365,18 @@ export default function App() {
     await fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subscription: data.subscription, title: `${sharer.name} shared a song 🎵`, body: `${share.title} — ${share.artist}`, url: "/" })
+      body: JSON.stringify({
+        subscription: data.subscription,
+        title: `${sharer.name} shared a song 🎵`,
+        body: `${share.title} — ${share.artist}`,
+        url: "/"
+      })
     });
   }
 
-  async function extractBgColor(imgUrl) {
-    const color = await getDominantColor(imgUrl);
-    setBgColor(color);
+  async function extractBgColors(imgUrl) {
+    const colors = await getDominantColors(imgUrl);
+    setBgColors(colors);
   }
 
   async function fetchShares() {
@@ -362,7 +386,7 @@ export default function App() {
     const rows = data || [];
     setShares(rows);
     setLoading(false);
-    if (rows[0]?.album_art) extractBgColor(rows[0].album_art);
+    if (rows[0]?.album_art) extractBgColors(rows[0].album_art);
   }
 
   useEffect(() => {
@@ -377,7 +401,7 @@ export default function App() {
             setNotif(`${sharer?.name || "Someone"} just shared a song 🎵`);
             setTimeout(() => setNotif(null), 4000);
           }
-          if (payload.new.album_art) extractBgColor(payload.new.album_art);
+          if (payload.new.album_art) extractBgColors(payload.new.album_art);
         }
         if (payload.eventType === "UPDATE") setShares(prev => prev.map(s => s.id === payload.new.id ? payload.new : s));
         if (payload.eventType === "DELETE") setShares(prev => prev.filter(s => s.id !== payload.old.id));
@@ -395,10 +419,16 @@ export default function App() {
 
   function handleShare(share) {
     setShares(prev => [share, ...prev]);
-    if (share.album_art) extractBgColor(share.album_art);
+    if (share.album_art) extractBgColors(share.album_art);
     setNotif("Shared! 🎵");
     setTimeout(() => setNotif(null), 3000);
     sendPushToOther(share);
+  }
+
+  function handleUserChange(userId) {
+    setCurrentUser(userId);
+    localStorage.setItem("currentUser", userId);
+    registerPush(userId);
   }
 
   const savedShares = shares.filter(s => s.saved);
@@ -406,7 +436,12 @@ export default function App() {
   const tabs = ["Feed", "Saved", "Stats"];
 
   return (
-    <div style={{ maxWidth: 520, margin: "0 auto", padding: "1.2rem 1rem 3rem", fontFamily: "'Georgia', serif", minHeight: "100vh", background: `linear-gradient(160deg, ${bgColor}22 0%, ${bgColor}08 40%, ${WARM.bg} 70%)`, transition: "background 1.5s ease" }}>
+    <div style={{
+      maxWidth: 520, margin: "0 auto", padding: "1.2rem 1rem 3rem",
+      fontFamily: "'Georgia', serif", minHeight: "100vh",
+      background: `linear-gradient(135deg, ${bgColors[0]}2E 0%, ${bgColors[1]}1A 100%)`,
+      transition: "background 1.5s ease"
+    }}>
       {notif && (
         <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", background: WARM.text, color: "#fff", padding: "11px 22px", borderRadius: 999, fontSize: 14, fontWeight: 600, zIndex: 200, boxShadow: "0 4px 20px rgba(0,0,0,0.2)", whiteSpace: "nowrap", letterSpacing: 0.3 }}>
           {notif}
@@ -425,7 +460,7 @@ export default function App() {
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <select value={currentUser} onChange={e => { setCurrentUser(e.target.value); registerPush(e.target.value); }} style={{ fontSize: 13, padding: "6px 10px", border: `1px solid ${WARM.inputBorder}`, borderRadius: 8, background: WARM.inputBg, color: WARM.textSoft, fontFamily: "inherit", cursor: "pointer" }}>
+            <select value={currentUser} onChange={e => handleUserChange(e.target.value)} style={{ fontSize: 13, padding: "6px 10px", border: `1px solid ${WARM.inputBorder}`, borderRadius: 8, background: WARM.inputBg, color: WARM.textSoft, fontFamily: "inherit", cursor: "pointer" }}>
               {USERS.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
             </select>
             <button onClick={() => setShowModal(true)} style={{ padding: "8px 16px", fontSize: 14, fontWeight: 700, background: WARM.text, color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", letterSpacing: 0.3, fontFamily: "inherit" }}>
@@ -444,9 +479,7 @@ export default function App() {
         ))}
       </div>
 
-      {loading && (
-        <div style={{ textAlign: "center", color: WARM.textMuted, padding: "3rem", fontSize: 14 }}>Loading your music...</div>
-      )}
+      {loading && <div style={{ textAlign: "center", color: WARM.textMuted, padding: "3rem", fontSize: 14 }}>Loading your music...</div>}
       {!loading && tab === "feed" && (
         <div>
           {shares.length === 0 && <div style={{ textAlign: "center", color: WARM.textMuted, padding: "3rem", fontSize: 14 }}>No shares yet — be the first to share a song ♫</div>}
