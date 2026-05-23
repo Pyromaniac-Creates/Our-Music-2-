@@ -53,7 +53,7 @@ const WARM = {
   cardBorder: "#EDE8E0",
   text: "#2C1A0E",
   textSoft: "#7A6650",
-  textMuted: "#B0A090",
+  textMuted: "#7A6650",
   accent: "#A07850",
   accentLight: "#F5EDE0",
   divider: "#EDE8E0",
