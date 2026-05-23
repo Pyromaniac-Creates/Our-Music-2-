@@ -7,9 +7,14 @@
   "theme_color": "#1DB954",
   "icons": [
     {
-      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/168px-Spotify_logo_without_text.svg.png",
+      "src": "https://i.imgur.com/iaYXCCz.jpeg",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/jpeg"
+    },
+    {
+      "src": "https://i.imgur.com/iaYXCCz.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
     }
   ]
 }
