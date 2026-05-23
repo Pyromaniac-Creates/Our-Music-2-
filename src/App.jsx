@@ -66,7 +66,7 @@ const WARM = {
 
 async function getDominantColors(imgUrl) {
   try {
-    const res = await fetch(`/api/color?url=${encodeURIComponent(imgUrl)}`);
+    const res = await fetch(`/api/color?url=${encodeURIComponent(imgUrl)}&t=${Date.now()}`);
     if (!res.ok) throw new Error("color fetch failed");
     const { color1, color2 } = await res.json();
     return [color1, color2];
