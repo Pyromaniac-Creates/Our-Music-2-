@@ -43,8 +43,8 @@ const MOODS = [
 const GROUPS = ["Happy & Uplifting","Energetic & Powerful","Calm & Peaceful","Dreamy & Atmospheric","Sad & Reflective","Dark & Intense","Cinematic & Epic","Romantic & Intimate","Groovy & Fun"];
 
 const USERS = [
-  { id: "you", name: "Jude",  initials: "JK", color: "#15658a", light: "#d1e2eb", text: "#5C3D1E" },
-  { id: "her", name: "Sarra", initials: "SZ", color: "#C2185B", light: "#FCE4EC", text: "#6D0030" },
+  { id: "you", name: "Jude",  initials: "JK", color: "#15658a", light: "#dcddde", text: "#614d39" },
+  { id: "her", name: "Sarra", initials: "SZ", color: "#C2185B", light: "#FCE4EC", text: "#614d39" },
 ];
 
 const WARM = {
