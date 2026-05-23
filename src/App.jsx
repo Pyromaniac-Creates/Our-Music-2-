@@ -43,8 +43,8 @@ const MOODS = [
 const GROUPS = ["Happy & Uplifting","Energetic & Powerful","Calm & Peaceful","Dreamy & Atmospheric","Sad & Reflective","Dark & Intense","Cinematic & Epic","Romantic & Intimate","Groovy & Fun"];
 
 const USERS = [
-  { id: "you", name: "Jude",  initials: "JU", color: "#A07850", light: "#F5EDE0", text: "#5C3D1E" },
-  { id: "her", name: "Sarra", initials: "SA", color: "#C2185B", light: "#FCE4EC", text: "#6D0030" },
+  { id: "you", name: "Jude",  initials: "JK", color: "#A07850", light: "#F5EDE0", text: "#5C3D1E" },
+  { id: "her", name: "Sarra", initials: "SZ", color: "#C2185B", light: "#FCE4EC", text: "#6D0030" },
 ];
 
 const WARM = {
@@ -418,7 +418,7 @@ export default function App() {
     <div style={{
       maxWidth: 520, margin: "0 auto", padding: "1.2rem 1rem 3rem",
       fontFamily: "'Georgia', serif", minHeight: "100vh",
-      background: `linear-gradient(135deg, ${bgColors[0]}2E 0%, ${bgColors[1]}1A 100%)`,
+      background: `linear-gradient(135deg, ${bgColors[0]}55 0%, ${bgColors[1]}33 100%)`,
       transition: "background 1.5s ease"
     }}>
       {notif && (
