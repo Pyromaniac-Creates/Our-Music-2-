@@ -44,7 +44,7 @@ const GROUPS = ["Happy & Uplifting","Energetic & Powerful","Calm & Peaceful","Dr
 
 const USERS = [
   { id: "you", name: "Jude",  initials: "JK", color: "#15658a", light: "#dfe4e6", text: "#301c07" },
-  { id: "her", name: "Sarra", initials: "SZ", color: "#e3d000", light: "#ffffa6", text: "#301c07" },
+  { id: "her", name: "Sarra", initials: "SZ", color: "#e3d000", light: "#ffffc4", text: "#301c07" },
 ];
 
 const WARM = {
