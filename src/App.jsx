@@ -61,22 +61,36 @@ const WARM = {
   inputBorder: "#DDD5C8",
   tabBg: "#F0EBE3",
   shadow: "0 2px 16px rgba(100,60,20,0.08)",
-  shadowHover: "0 4px 24px rgba(100,60,20,0.13)",
 };
 
-// Convert "rgb(r,g,b)" string to rgba with opacity
+// Safely convert "rgb(r,g,b)" to "rgba(r,g,b,opacity)"
 function toRgba(rgbStr, opacity) {
-  const match = rgbStr.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-  if (!match) return `rgba(160,136,90,${opacity})`;
-  return `rgba(${match[1]},${match[2]},${match[3]},${opacity})`;
+  const m = rgbStr.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+  if (!m) return `rgba(160,136,90,${opacity})`;
+  return `rgba(${m[1]},${m[2]},${m[3]},${opacity})`;
+}
+
+// Build a multi-stop gradient string from an array of rgb() colour strings
+function buildGradient(colors) {
+  if (!colors || colors.length === 0) return `rgba(196,136,90,0.4)`;
+  // Opacity fades from 0.5 for first colour down to 0.2 for last
+  const stops = colors.map((c, i) => {
+    const opacity = 0.50 - (i * (0.25 / Math.max(colors.length - 1, 1)));
+    const pct = Math.round((i / Math.max(colors.length - 1, 1)) * 100);
+    return `${toRgba(c, Math.max(opacity, 0.20))} ${pct}%`;
+  });
+  return `linear-gradient(135deg, ${stops.join(", ")})`;
 }
 
 async function getDominantColors(imgUrl) {
   try {
     const res = await fetch(`/api/color?url=${encodeURIComponent(imgUrl)}&t=${Date.now()}`);
     if (!res.ok) throw new Error("color fetch failed");
-    const { colors } = await res.json();
-    return colors;
+    const data = await res.json();
+    // Support both {colors:[...]} and legacy {color1, color2} response shapes
+    if (data.colors && Array.isArray(data.colors)) return data.colors;
+    if (data.color1) return [data.color1, data.color2].filter(Boolean);
+    return ["rgb(196,136,90)", "rgb(127,119,221)"];
   } catch {
     return ["rgb(196,136,90)", "rgb(127,119,221)"];
   }
@@ -103,7 +117,9 @@ function SongCard({ share, currentUser, onSave, onDelete }) {
   const user = USERS.find(u => u.id === share.user_id);
   const mood = MOODS.find(m => m.name === share.mood_name) || { color: share.mood_color, light: share.mood_light, text: share.mood_text_color, name: share.mood_name };
   const isOwner = share.user_id === currentUser;
-  const timeLabel = share.created_at ? new Date(share.created_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "Just now";
+  const timeLabel = share.created_at
+    ? new Date(share.created_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+    : "Just now";
   return (
     <div style={{ background: WARM.card, border: `1px solid ${WARM.cardBorder}`, borderLeft: `3.5px solid ${mood.color}`, borderRadius: 14, padding: "1.1rem 1.25rem", marginBottom: 14, boxShadow: WARM.shadow }}>
       <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
@@ -417,15 +433,14 @@ export default function App() {
   const user = USERS.find(u => u.id === currentUser);
   const tabs = ["Feed", "Saved", "Stats"];
 
-  // Convert rgb() strings to rgba() with proper opacity for the gradient
-  const grad1 = toRgba(bgColors[0], 0.45);
-  const grad2 = toRgba(bgColors[1], 0.30);
+  // Build multi-stop gradient properly using rgba()
+  const gradient = buildGradient(bgColors);
 
   return (
     <div style={{
       maxWidth: 520, margin: "0 auto", padding: "1.2rem 1rem 3rem",
       fontFamily: "'Georgia', serif", minHeight: "100vh",
-      background: `linear-gradient(135deg, ${grad1} 0%, ${grad2} 100%)`,
+      background: gradient,
       transition: "background 1.5s ease"
     }}>
       {notif && (
@@ -435,7 +450,6 @@ export default function App() {
       )}
       {showModal && <ShareModal onClose={() => setShowModal(false)} onShare={handleShare} currentUser={currentUser} />}
 
-      {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <div>
@@ -456,7 +470,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div style={{ display: "flex", gap: 0, marginBottom: 22, background: WARM.tabBg, borderRadius: 12, padding: 4, border: `1px solid ${WARM.cardBorder}` }}>
         {tabs.map(t => (
           <button key={t} onClick={() => setTab(t.toLowerCase())} style={{ flex: 1, padding: "8px 0", borderRadius: 9, border: "none", background: tab === t.toLowerCase() ? WARM.card : "transparent", color: tab === t.toLowerCase() ? WARM.text : WARM.textMuted, cursor: "pointer", fontSize: 14, fontWeight: tab === t.toLowerCase() ? 700 : 400, boxShadow: tab === t.toLowerCase() ? WARM.shadow : "none", transition: "all 0.2s", fontFamily: "inherit" }}>
