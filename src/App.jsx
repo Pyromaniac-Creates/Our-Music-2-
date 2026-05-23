@@ -75,8 +75,8 @@ async function getDominantColors(imgUrl) {
   try {
     const res = await fetch(`/api/color?url=${encodeURIComponent(imgUrl)}&t=${Date.now()}`);
     if (!res.ok) throw new Error("color fetch failed");
-    const { color1, color2 } = await res.json();
-    return [color1, color2];
+    const { colors } = await res.json();
+    return colors;
   } catch {
     return ["rgb(196,136,90)", "rgb(127,119,221)"];
   }
