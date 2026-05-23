@@ -89,7 +89,7 @@ export default async function handler(req, res) {
     }
 
     // Cache for 24 hours since album art doesn't change
-    res.setHeader("Cache-Control", "s-maxage=86400, stale-while-revalidate");
+    res.setHeader("Cache-Control", "no-cache, no-store");
     res.status(200).json({ color1, color2 });
 
   } catch (err) {
